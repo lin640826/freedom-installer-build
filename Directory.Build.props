@@ -1,0 +1,40 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Settings shared by every project in this repository. -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <!-- Project-specific versions also determine their assembly and file versions.
+         InformationalVersion is derived from Version by the SDK, so it is not repeated here. -->
+    <Version>0.9.1</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Build output stays next to each project so artefacts are never confused with
+         authoritative source files. -->
+    <BaseOutputPath>$(MSBuildProjectDirectory)/bin/</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildProjectDirectory)/obj/</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Enable strict end-of-input validation in the application and test hosts from startup. -->
+    <RuntimeHostConfigurationOption Include="System.IO.Compression.UseStrictValidation" Value="true" />
+  </ItemGroup>
+
+  <!-- Locally downloaded, hash-verified public build inputs. Projects consume these
+       values in ItemGroups during evaluation, so the import must run here. -->
+  <Import Project="$(BundledBuildInputsProps)"
+          Condition="'$(BundledBuildInputsProps)' != '' and Exists('$(BundledBuildInputsProps)')" />
+
+  <Target Name="FailOnMissingBundledBuildInputsProps"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(BundledBuildInputsProps)' != '' and !Exists('$(BundledBuildInputsProps)')">
+    <Error Text="BundledBuildInputsProps was specified as '$(BundledBuildInputsProps)' but the file does not exist." />
+  </Target>
+
+</Project>

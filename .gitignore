@@ -1,0 +1,26 @@
+bin/
+obj/
+artifacts/
+build/
+out/
+
+*.log
+tmp/
+temp/
+_private/
+inputs/
+control/
+_tickets/
+_receipts/
+secrets/
+*.pfx
+*.pem
+*.key
+
+!tests/Fixtures/Import/**
+
+# AOSP's public test fixture, not a device or maintainer key.
+!vendor/aosp/testkey_rsa4096.pem
+
+/tools/boot-tool-inputs/*
+!/tools/boot-tool-inputs/.gitkeep
