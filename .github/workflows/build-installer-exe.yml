@@ -1,0 +1,40 @@
+# Private build of the unmodified upstream installer source (see the first commit message).
+# Follows docs/build.md "一次完整构建" exactly and uploads the single EXE plus its build record.
+name: build-installer-exe
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build the builder image (tools/installer-builder.Dockerfile)
+        run: docker build -f tools/installer-builder.Dockerfile -t armada-installer-builder tools
+
+      - name: Build FreedomInstaller.App.exe
+        run: |
+          mkdir -p artifacts
+          docker run --rm -v "${PWD}:/src" -v "${PWD}/artifacts:/work" armada-installer-builder \
+            python3 -B maintenance/build_installer.py --work-dir /work/build --output-dir /work/publish
+
+      - name: List and hash outputs
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" artifacts
+          ls -la artifacts/publish
+          (cd artifacts/publish && sha256sum * | tee ../SHA256SUMS.txt)
+          find artifacts/build -maxdepth 2 -name 'build-record.json' -exec cp {} artifacts/ \;
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: FreedomInstaller-69e30f8
+          path: |
+            artifacts/publish/
+            artifacts/SHA256SUMS.txt
+            artifacts/build-record.json
+          retention-days: 30
+          if-no-files-found: error
