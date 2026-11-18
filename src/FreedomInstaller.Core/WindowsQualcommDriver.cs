@@ -1118,9 +1118,10 @@ public sealed partial class WindowsQualcommDriver
 
             if (error != ErrorInsufficientBuffer)
             {
-                throw new Win32Exception(
-                    error,
-                    "SetupDiGetActualModelsSectionW failed while sizing the models section name.");
+                // Local fix: an INF whose only native decoration targets a newer Windows build
+                // (e.g. Realtek ext_rtkbt_leaudioinband.inf "NTamd64.10.0...26100" on Windows 10 19045)
+                // has no models section for this host. That is an ordinary non-candidate, not a query failure.
+                return null;
             }
 
             if (requiredSize == 0)
